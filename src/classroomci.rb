@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-class Projet 
+class Project 
   include DataMapper::Resource
   property :id,      Serial
   property :url,     Text, :required => true
@@ -12,6 +12,7 @@ class ClassroomCI < Sinatra::Application
 
   configure do
     set :haml, :format => :html5
+    set :root, File.dirname(__FILE__)+'/../'
     DataMapper.setup(:default, ENV['DATABASE_URL'] || "sqlite3://#{Dir.pwd}/database.db")
     DataMapper.finalize.auto_upgrade!
   end

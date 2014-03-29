@@ -3,6 +3,6 @@ require 'bundler'
 
 Bundler.require
 
-require File.expand_path(File.join(File.dirname(__FILE__), 'classroomci'))
+require File.expand_path(File.join(File.dirname(__FILE__), 'src/classroomci'))
 
 run ClassroomCI
