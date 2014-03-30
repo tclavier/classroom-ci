@@ -1,19 +1,15 @@
 # encoding: utf-8
 require "active_support/core_ext"
-
-class Project 
-  include DataMapper::Resource
-  property :id,      Serial
-  property :url,     Text, :required => true
-  property :student, Text
-end
+require_relative "project"
 
 class ClassroomCI < Sinatra::Application
+
   configure do
     set :haml, :format => :html5
     set :root, File.dirname(__FILE__)+'/../'
     DataMapper.setup(:default, ENV['DATABASE_URL'] || "sqlite3://#{Dir.pwd}/database.db")
     DataMapper.finalize.auto_upgrade!
+    enable :sessions
   end
 
   error do
@@ -25,6 +21,7 @@ class ClassroomCI < Sinatra::Application
   end
 
   get '/' do
+    @projects = Project.all(:order => [ :points.desc ])
     haml :index
   end
 
@@ -37,10 +34,24 @@ class ClassroomCI < Sinatra::Application
     project.url = params[:url]
     logger.debug project
     if project.save
-      redirect '/'
+      redirect '/', :notice => 'The project was successfully created'
     else
       redirect '/projects/new'
     end
   end
+
+  get '/build' do 
+    stream do |out|
+      out << "<ul>\n"
+      projectControler = ProjectControler.new
+      Project.all.each do |project|
+        out << "<li>#{project.url}"
+        projectControler.build(project.id)
+        out << " : ok</li>\n"
+      end
+      out << "</ul>\n"
+    end
+  end
+
 end
 

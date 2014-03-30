@@ -3,3 +3,9 @@
   %head
   %body
     %h1 Classroom continuous integration
+    %form{action:"/projects", method:"post"}
+      %input{placeholder:"your git URL", name:"url"}
+        %button#send Ajouter mon projet
+    %ul.projects
+      -@projects.each do |project| 
+        %li #{project.url} : #{project.points}
