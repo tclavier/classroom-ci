@@ -1,4 +1,5 @@
 # encoding: utf-8
+require "active_support/core_ext"
 
 class Project 
   include DataMapper::Resource
@@ -8,8 +9,6 @@ class Project
 end
 
 class ClassroomCI < Sinatra::Application
-  @flash
-
   configure do
     set :haml, :format => :html5
     set :root, File.dirname(__FILE__)+'/../'
@@ -27,6 +26,21 @@ class ClassroomCI < Sinatra::Application
 
   get '/' do
     haml :index
+  end
+
+  get '/projects/new' do
+    haml :project_new
+  end
+
+  post '/projects' do
+    project = Project.new()
+    project.url = params[:url]
+    logger.debug project
+    if project.save
+      redirect '/'
+    else
+      redirect '/projects/new'
+    end
   end
 end
 
