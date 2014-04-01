@@ -16,4 +16,5 @@ group :development do
   gem "rspec-html-matchers"
   gem 'guard'
   gem 'guard-rspec'
+  gem "capistrano"
 end

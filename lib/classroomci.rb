@@ -53,5 +53,17 @@ class ClassroomCI < Sinatra::Application
     end
   end
 
+  get '/init' do 
+    stream do |out|
+      out << "<ul>\n"
+      projectControler = ProjectControler.new
+      Project.all.each do |project|
+        out << "<li>#{project.url}"
+        projectControler.init(project.id)
+        out << " : ok</li>\n"
+      end
+      out << "</ul>\n"
+    end
+  end
 end
 

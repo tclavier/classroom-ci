@@ -28,10 +28,12 @@ class ProjectControler
     project = Project.get(id)
     maven(project)
     count_tests(project)
-    if (project.points == 0)
-      project.points = 1
-    end
-    project.save
+  end
+
+  def init(id)
+    project = Project.get(id)
+    maven_init(project)
+    count_tests(project)
   end
 
   def clone_or_pull(p)
@@ -45,7 +47,7 @@ class ProjectControler
     $?.exitstatus
   end
 
-  def maven(project)
+  def maven_init(project)
     clone_or_pull(project) 
     pom_file=File.dirname(__FILE__) + "/../maven/pom.xml"
     FileUtils.cp "#{pom_file}", "#{project.get_build_dir}"
@@ -58,6 +60,16 @@ class ProjectControler
     $?.exitstatus
   end
   
+  def maven(project)
+    clone_or_pull(project) 
+    pom_file=File.dirname(__FILE__) + "/../maven/pom.xml"
+    FileUtils.cp "#{pom_file}", "#{project.get_build_dir}"
+    FileUtils.rm "#{project.get_build_dir}/src/test/java/iut/tdd/TestConvertNum2Text.java", :force => true
+    cmd = "cd #{project.get_build_dir} && /usr/bin/mvn test > #{project.get_build_dir}/build.log 2>&1"
+    system(cmd)
+    $?.exitstatus
+  end
+
   def count_tests(project)
     if File.exist? ("#{project.get_build_dir}/build.log") 
       open("#{project.get_build_dir}/build.log").grep(/^Tests/).each do |line|
