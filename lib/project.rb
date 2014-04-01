@@ -49,6 +49,10 @@ class ProjectControler
     clone_or_pull(project) 
     pom_file=File.dirname(__FILE__) + "/../maven/pom.xml"
     FileUtils.cp "#{pom_file}", "#{project.get_build_dir}"
+    if (Dir.exist? "#{project.get_build_dir}/src/test/java/iut/tdd/" )
+      test_file=File.dirname(__FILE__) + "/../maven/TestConvertNum2Text.java"
+      FileUtils.cp "#{test_file}", "#{project.get_build_dir}/src/test/java/iut/tdd/"
+    end
     cmd = "cd #{project.get_build_dir} && /usr/bin/mvn test > #{project.get_build_dir}/build.log 2>&1"
     system(cmd)
     $?.exitstatus
@@ -59,9 +63,14 @@ class ProjectControler
       open("#{project.get_build_dir}/build.log").grep(/^Tests/).each do |line|
         all, red, err, skip = /^Tests run:\s(\d+), Failures:\s(\d+), Errors:\s(\d+), Skipped:\s(\d+)/.match(line).captures
         if ( all.to_i == 0 ) 
-          project.points = project.points - 1
+          project.points = project.points - 2
         else
-          project.points = project.points + ((all.to_i - red.to_i - err.to_i - skip.to_i) - 1.5 * red.to_i)
+          vert = (all.to_i - red.to_i - err.to_i - skip.to_i)
+          if (vert == all.to_i)
+            project.points = project.points + 1
+          else 
+            project.points = vert - red.to_i
+          end
         end
         project.save
       end
