@@ -27,6 +27,7 @@ class ProjectControler
   def build(id)
     project = Project.get(id)
     maven(project)
+    count_tests(project)
     if (project.points == 0)
       project.points = 1
     end
@@ -54,23 +55,20 @@ class ProjectControler
   end
   
   def count_tests(project)
-    open("#{project.get_build_dir}/build.log").grep(/^Tests/).each do |line|
-      all, red, err, skip = /Tests run: \d+, Failures: \d+, Errors: \d+, Skipped: \d+/.match(line).captures
-      build = Build.new
-      build.red = red;
-      build.green = all - red - err - skip
-      project.builds << build
+    if File.exist? ("#{project.get_build_dir}/build.log") 
+      open("#{project.get_build_dir}/build.log").grep(/^Tests/).each do |line|
+        all, red, err, skip = /^Tests run:\s(\d+), Failures:\s(\d+), Errors:\s(\d+), Skipped:\s(\d+)/.match(line).captures
+        if ( all.to_i == 0 ) 
+          project.points = project.points - 1
+        else
+          project.points = project.points + ((all.to_i - red.to_i - err.to_i - skip.to_i) - 1.5 * red.to_i)
+        end
+        project.save
+      end
+    else
+      project.points = project.points - 1
       project.save
     end
-    #unless File.directory? project.get_build_dir+"/target/surefire-reports/"
-    #  return 0
-    #end
-    #Dir.foreach(project.get_build_dir+"/target/surefire-reports/") do |file|
-    #  next if item == '.' or item == '..'
-    #  if file.match(/^.*\.xml$/i) 
-    #    puts file
-    #  end
-    #end
   end
 
 end

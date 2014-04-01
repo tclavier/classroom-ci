@@ -10,7 +10,7 @@ describe 'Project model' do
   it "build project must change points" do 
     ctrl = ProjectControler.new
     ctrl.build(@project.id)
-    @project.reload.points.should be > 0
+    @project.reload.points.should be < 0
   end
 
   it "clone project must return true" do
