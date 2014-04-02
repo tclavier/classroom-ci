@@ -1,11 +1,25 @@
 !!!
 %html
   %head
+    %meta{'http-equiv' => "refresh", :content => "300"}
+    %link{:rel=>"stylesheet", :href=>"//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"}
+    %link{:rel=>"stylesheet", :href=>"//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css"}
+    %script{:src=>"//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"}
+
   %body
     %h1 Classroom continuous integration
     %form{action:"/projects", method:"post"}
       %input{placeholder:"your git URL", name:"url"}
         %button#send Ajouter mon projet
-    %ul.projects
+    %table.table.table-striped
+      %tr
+        %th URL
+        %th Points
+        %th Vert
+        %th Rouge
       -@projects.each do |project| 
-        %li #{project.url} : #{project.points} 
+        %tr 
+          %td=project.url
+          %td=project.points 
+          %td=project.vert 
+          %td=project.rouge 

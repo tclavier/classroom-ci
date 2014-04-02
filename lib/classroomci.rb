@@ -33,11 +33,12 @@ class ClassroomCI < Sinatra::Application
     project = Project.new()
     project.url = params[:url]
     logger.debug project
-    if project.save
-      redirect '/', :notice => 'The project was successfully created'
-    else
-      redirect '/projects/new'
+    if project.url[0,5] == "https"
+      if project.save
+        redirect '/', :notice => 'The project was successfully created'
+      end
     end
+    redirect '/'
   end
 
   get '/build' do 
