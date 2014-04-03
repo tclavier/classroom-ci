@@ -3,6 +3,15 @@ require "active_support/core_ext"
 require_relative "project"
 
 class ClassroomCI < Sinatra::Application
+  
+  Thread.new do # trivial example work thread
+    while true do
+      puts "starting thread work"
+      projectControler = ProjectControler.new
+      projectControler.perform
+      sleep 30
+    end
+  end
 
   configure do
     set :haml, :format => :html5
@@ -42,29 +51,10 @@ class ClassroomCI < Sinatra::Application
   end
 
   get '/build' do 
-    stream do |out|
-      out << "<ul>\n"
-      projectControler = ProjectControler.new
-      Project.all.each do |project|
-        out << "<li>#{project.url}"
-        projectControler.build(project.id)
-        out << " : ok</li>\n"
-      end
-      out << "</ul>\n"
-    end
+    projectControler = ProjectControler.new
+    projectControler.perform
+    redirect '/'
   end
 
-  get '/init' do 
-    stream do |out|
-      out << "<ul>\n"
-      projectControler = ProjectControler.new
-      Project.all.each do |project|
-        out << "<li>#{project.url}"
-        projectControler.init(project.id)
-        out << " : ok</li>\n"
-      end
-      out << "</ul>\n"
-    end
-  end
 end
 

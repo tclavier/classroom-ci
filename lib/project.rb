@@ -2,31 +2,21 @@
 
 class Project 
   include DataMapper::Resource
-  property :id,      Serial
-  property :url,     Text, required:true, :unique => true
-  property :student, Text
-  property :points,  Float, default:0.0
-  property :rouge,   Integer, default:0
-  property :vert,    Integer, default:0
-  has n,   :builds
+  property :id,         Serial
+  property :url,        Text, required:true, :unique => true
+  property :student,    Text
+  property :points,     Float, default:0.0
+  property :rouge,      Integer, default:0
+  property :vert,       Integer, default:0
+  property :last_build, DateTime    
   
   def get_build_dir
     "/tmp/project_#{id}"
   end
 end
 
-class Build
-  include DataMapper::Resource
-  property :id,    Serial
-  property :date,  DateTime
-  property :note,  Float
-  property :green, Integer
-  property :red,   Integer
-  belongs_to :project
-end
-
 class ProjectControler
-  def build(id)
+  def build_project(id)
     project = Project.get(id)
     maven(project)
     count_tests(project)
@@ -41,37 +31,27 @@ class ProjectControler
   def clone_or_pull(p)
     dir = p.get_build_dir
     if (Dir.exists? dir ) 
-      cmd = "GIT_SSL_NO_VERIFY=true /usr/bin/git -C #{dir} pull > #{dir}/debug 2>&1"
+      cmd = "GIT_SSL_NO_VERIFY=true /usr/bin/git -C #{dir} pull"
     else
-      cmd = "GIT_SSL_NO_VERIFY=true /usr/bin/git clone #{p.url} #{dir} > /tmp/debug 2>&1"
+      cmd = "GIT_SSL_NO_VERIFY=true /usr/bin/git clone #{p.url} #{dir}"
     end
-    system(cmd)
-    $?.exitstatus
+    puts "doing #{cmd}"
+    puts %x[ #{cmd} ]
+    puts "git ok"
   end
 
-  def maven_init(project)
-    clone_or_pull(project) 
-    pom_file=File.dirname(__FILE__) + "/../maven/pom.xml"
-    FileUtils.cp "#{pom_file}", "#{project.get_build_dir}"
-    if (Dir.exist? "#{project.get_build_dir}/src/test/java/iut/tdd/" )
-      test_file=File.dirname(__FILE__) + "/../maven/TestConvertNum2Text.java"
-      FileUtils.cp "#{test_file}", "#{project.get_build_dir}/src/test/java/iut/tdd/"
-    end
-    cmd = "cd #{project.get_build_dir} && /usr/bin/mvn test > #{project.get_build_dir}/build.log 2>&1"
-    system(cmd)
-    $?.exitstatus
-  end
-  
   def maven(project)
     clone_or_pull(project) 
     pom_file=File.dirname(__FILE__) + "/../maven/pom.xml"
     FileUtils.cp "#{pom_file}", "#{project.get_build_dir}"
     cmd = "cd #{project.get_build_dir} && /usr/bin/mvn test > #{project.get_build_dir}/build.log 2>&1"
-    system(cmd)
-    $?.exitstatus
+    puts "doing #{cmd}"
+    puts %x[ #{cmd} ]
+    puts "maven ok"
   end
 
   def count_tests(project)
+    puts "Counting points"
     if File.exist? ("#{project.get_build_dir}/build.log") 
       open("#{project.get_build_dir}/build.log").grep(/^Tests/).each do |line|
         all, red, err, skip = /^Tests run:\s(\d+), Failures:\s(\d+), Errors:\s(\d+), Skipped:\s(\d+)/.match(line).captures
@@ -95,7 +75,16 @@ class ProjectControler
     else
       project.points = 0
     end
+    project.last_build = DateTime.now
     project.save
+  end
+
+  def perform
+    Project.all.each do |project|
+      puts "doing project #{project.url}"
+      build_project(project.id)
+      puts "ok"
+    end
   end
 
 end

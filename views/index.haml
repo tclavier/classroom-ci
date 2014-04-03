@@ -17,9 +17,11 @@
         %th Points
         %th Vert
         %th Rouge
+        %th Last
       -@projects.each do |project| 
         %tr 
           %td=project.url
           %td=project.points 
           %td=project.vert 
           %td=project.rouge 
+          %td=project.last_build 
