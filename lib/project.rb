@@ -31,13 +31,14 @@ class ProjectControler
   def clone_or_pull(p)
     dir = p.get_build_dir
     if (Dir.exists? dir ) 
-      cmd = "GIT_SSL_NO_VERIFY=true /usr/bin/git -C #{dir} pull"
+      cmd = "/usr/bin/git -C #{dir} pull"
     else
-      cmd = "GIT_SSL_NO_VERIFY=true /usr/bin/git clone #{p.url} #{dir}"
+      cmd = "/usr/bin/git clone #{p.url} #{dir}"
     end
     puts "doing #{cmd}"
-    puts %x[ #{cmd} ]
+    system({"GIT_SSL_NO_VERIFY" => "true"},cmd)
     puts "git ok"
+    $?.exit_code
   end
 
   def maven(project)
@@ -46,8 +47,9 @@ class ProjectControler
     FileUtils.cp "#{pom_file}", "#{project.get_build_dir}"
     cmd = "cd #{project.get_build_dir} && /usr/bin/mvn test > #{project.get_build_dir}/build.log 2>&1"
     puts "doing #{cmd}"
-    puts %x[ #{cmd} ]
+    system(cmd)
     puts "maven ok"
+    $?.exit_code
   end
 
   def count_tests(project)
