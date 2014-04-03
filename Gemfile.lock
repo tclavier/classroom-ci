@@ -76,6 +76,7 @@ GEM
     fastercsv (1.5.5)
     ffi (1.9.3)
     formatador (0.2.4)
+    git (1.2.6)
     guard (2.6.0)
       formatador (>= 0.2.4)
       listen (~> 2.7)
@@ -163,6 +164,7 @@ DEPENDENCIES
   capistrano (~> 2.15.5)
   data_mapper
   dm-sqlite-adapter
+  git
   guard
   guard-rspec
   haml

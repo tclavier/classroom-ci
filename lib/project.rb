@@ -20,6 +20,7 @@ class ProjectControler
     project = Project.get(id)
     maven(project)
     count_tests(project)
+    FileUtils.rm_rf(project.get_build_dir)
   end
 
   def init(id)
@@ -30,15 +31,7 @@ class ProjectControler
 
   def clone_or_pull(p)
     dir = p.get_build_dir
-    if (Dir.exists? dir ) 
-      cmd = "/usr/bin/git -C #{dir} pull"
-    else
-      cmd = "/usr/bin/git clone #{p.url} #{dir}"
-    end
-    puts "doing #{cmd}"
-    system({"GIT_SSL_NO_VERIFY" => "true"},cmd)
-    puts "git ok"
-    $?.exit_code
+    puts "clone in #{p.get_build_dir}"
   end
 
   def maven(project)
@@ -47,8 +40,8 @@ class ProjectControler
     FileUtils.cp "#{pom_file}", "#{project.get_build_dir}"
     cmd = "cd #{project.get_build_dir} && /usr/bin/mvn test > #{project.get_build_dir}/build.log 2>&1"
     puts "doing #{cmd}"
-    system(cmd)
-    puts "maven ok"
+    out = system(cmd)
+    puts "maven #{out}"
     $?.exit_code
   end
 
@@ -84,9 +77,27 @@ class ProjectControler
   def perform
     Project.all.each do |project|
       puts "doing project #{project.url}"
-      build_project(project.id)
+      count_tests(project)
       puts "ok"
     end
+  end
+
+  def script
+    f = File.new('/tmp/build', 'w')
+    f.write("#!/bin/bash\n")
+    Project.all.each do |project|
+      f.write "[ -f \"#{project.get_build_dir}\" ] && rm -rf #{project.get_build_dir}\n"
+      f.write "if [ -d \"#{project.get_build_dir}\" ] \n"
+      f.write "then\n"
+      f.write "  cd #{project.get_build_dir} && GIT_SSL_NO_VERIFY=true /usr/bin/git pull\n"
+      f.write "else\n"
+      f.write "  GIT_SSL_NO_VERIFY=true /usr/bin/git clone #{project.url} #{project.get_build_dir}\n"
+      f.write "fi\n"
+      f.write "cd #{project.get_build_dir} && /usr/bin/mvn test > #{project.get_build_dir}/build.log 2>&1\n"
+      f.write "\n" 
+    end
+    f.close
+
   end
 
 end

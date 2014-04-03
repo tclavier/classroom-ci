@@ -8,6 +8,7 @@ gem "activesupport" #activerecord
 # Flash
 gem 'rack-flash3'
 gem 'sinatra-redirect-with-flash'
+gem 'git'
 
 group :development do
   gem "shotgun"

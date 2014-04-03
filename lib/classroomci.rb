@@ -4,15 +4,6 @@ require_relative "project"
 
 class ClassroomCI < Sinatra::Application
   
-  Thread.new do # trivial example work thread
-    while true do
-      puts "starting thread work"
-      projectControler = ProjectControler.new
-      projectControler.perform
-      sleep 30
-    end
-  end
-
   configure do
     set :haml, :format => :html5
     set :root, File.dirname(__FILE__)+'/../'
@@ -56,5 +47,10 @@ class ClassroomCI < Sinatra::Application
     redirect '/'
   end
 
+  get '/script' do 
+    projectControler = ProjectControler.new
+    projectControler.script
+    redirect '/'
+  end
 end
 
