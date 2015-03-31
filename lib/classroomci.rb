@@ -35,6 +35,8 @@ class ClassroomCI < Sinatra::Application
     logger.debug project
     if project.url[0,5] == "https"
       if project.save
+        projectControler = ProjectControler.new
+        projectControler.count_tests(project)
         redirect '/', :notice => 'The project was successfully created'
       end
     end
