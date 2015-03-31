@@ -127,15 +127,23 @@ public class TestConvertNum2Text {
 	}
 
 	@Test
+	public void test_space() {
+		Assert.assertEquals("cent", Convert.num2text(" 100"));
+		Assert.assertEquals("cent dix", Convert.num2text("110 "));
+		Assert.assertEquals("cent treize", Convert.num2text("  113  "));
+	}
+
+	@Test
 	public void test_mille() {
 		Assert.assertEquals("mille", Convert.num2text("1000"));
+		Assert.assertEquals("mille", Convert.num2text("1 000"));
 	}
 
 	@Test
 	public void test_euro() {
 		Assert.assertEquals("cent euros", Convert.num2text("100 €"));
 		Assert.assertEquals("trois euros cinquante", Convert.num2text("3,5 €"));
-		Assert.assertEquals("un euro quarante et un", Convert.num2text("1,41 €"));
+		Assert.assertEquals("un euro quarante et un", Convert.num2text("1.41 €"));
 	}
 
 	@Test
