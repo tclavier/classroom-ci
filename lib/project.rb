@@ -55,7 +55,9 @@ class ProjectControler
     puts "Counting points"
     if File.exist? ("#{project.get_build_dir}/build.log") 
       open("#{project.get_build_dir}/build.log").grep(/^Tests/).each do |line|
-        all, red, err, skip = /^Tests run:\s(\d+), Failures:\s(\d+), Errors:\s(\d+), Skipped:\s(\d+)/.match(line).captures
+        if match = /^Tests run:\s(\d+), Failures:\s(\d+), Errors:\s(\d+), Skipped:\s(\d+)/.match(line)
+          all, red, err, skip = match.captures
+        end
         puts line
         vert = all.to_i - red.to_i - err.to_i - skip.to_i
         rouge = red.to_i
