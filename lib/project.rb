@@ -43,6 +43,7 @@ class ProjectControler
     pom_file=File.dirname(__FILE__) + "/../maven/pom.xml"
     FileUtils.cp "#{pom_file}", "#{project.get_build_dir}"
     test_file=File.dirname(__FILE__) + "/../maven/TestConvertNum2Text.java"
+    FileUtils.mkpath("#{project.get_build_dir}/src/test/java/iut/tdd/") unless File.directory?("#{project.get_build_dir}/src/test/java/iut/tdd/")
     FileUtils.cp "#{test_file}", "#{project.get_build_dir}/src/test/java/iut/tdd/"
     cmd = "cd #{project.get_build_dir} && /usr/bin/mvn test > #{project.get_build_dir}/build.log 2>&1"
     puts "doing #{cmd}"
