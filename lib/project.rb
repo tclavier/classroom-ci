@@ -59,19 +59,18 @@ class ProjectControler
         if match = /^Tests run:\s(\d+), Failures:\s(\d+), Errors:\s(\d+), Skipped:\s(\d+)/.match(line)
           all, red, err, skip = match.captures
         end
-        puts line
-        vert = all.to_i - red.to_i - err.to_i - skip.to_i
-        rouge = red.to_i
+      end
+      vert = all.to_i - red.to_i - err.to_i - skip.to_i
+      rouge = red.to_i
 
-        if (vert > project.vert)
-          project.points += 1
+      if (vert > project.vert)
+        project.points += 1
+      else 
+        if (vert < project.vert )
+          project.points -= 1
         else 
-          if (vert < project.vert )
-            project.points -= 1
-          else 
-            project.points -= 0.1
-          end 
-        end
+          project.points -= 0.1
+      end
 
         project.rouge = rouge
         project.vert = vert
