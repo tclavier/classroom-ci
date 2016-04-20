@@ -70,8 +70,7 @@ class ProjectControler
           project.points -= 1
         else 
           project.points -= 0.1
-      end
-
+        end
         project.rouge = rouge
         project.vert = vert
       end
@@ -85,7 +84,7 @@ class ProjectControler
   def perform
     Project.all.each do |project|
       puts "doing project #{project.url}"
-      maven(project)
+      #maven(project)
       count_tests(project)
       puts "ok"
     end
@@ -94,6 +93,7 @@ class ProjectControler
   def script
     f = File.new('/tmp/build', 'w')
     f.write("#!/bin/bash\n")
+    f.write("set -x \n")
     pom_file=File.dirname(__FILE__) + "/../maven/pom.xml"
     Project.all.each do |project|
       f.write "[ -f \"#{project.get_build_dir}\" ] && rm -rf #{project.get_build_dir}\n"
@@ -107,6 +107,8 @@ class ProjectControler
       f.write "cd #{project.get_build_dir} && /usr/bin/mvn test > #{project.get_build_dir}/build.log 2>&1\n"
       f.write "\n" 
     end
+      f.write "wget http://localhost:8080/script\n" 
+      f.write "wget http://localhost:8080/build\n" 
     f.close
 
   end
