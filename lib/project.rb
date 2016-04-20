@@ -42,7 +42,7 @@ class ProjectControler
     clone_or_pull(project) 
     pom_file=File.dirname(__FILE__) + "/../maven/pom.xml"
     FileUtils.cp "#{pom_file}", "#{project.get_build_dir}"
-    test_file=File.dirname(__FILE__) + "/../maven/TestConvertNum2Text.java"
+    test_file=File.dirname(__FILE__) + "/../maven/Tests.java"
     FileUtils.mkpath("#{project.get_build_dir}/src/test/java/iut/tdd/") unless File.directory?("#{project.get_build_dir}/src/test/java/iut/tdd/")
     FileUtils.cp "#{test_file}", "#{project.get_build_dir}/src/test/java/iut/tdd/"
     cmd = "cd #{project.get_build_dir} && /usr/bin/mvn test > #{project.get_build_dir}/build.log 2>&1"
@@ -59,14 +59,16 @@ class ProjectControler
       rouge = 0
       erreur = 0
       nonfait = 0
+      vert = 0
 
       open("#{project.get_build_dir}/build.log").grep(/^Tests/).each do |line|
+        # La dernière ligne match la somme
         if match = /^Tests run:\s(\d+), Failures:\s(\d+), Errors:\s(\d+), Skipped:\s(\d+)/.match(line)
           all, red, err, skip = match.captures
-          tous += all.to_i
-          rouge += red.to_i
-          erreur += err.to_i
-          nonfait += skip.to_i
+          tous = all.to_i
+          rouge = red.to_i
+          erreur = err.to_i
+          nonfait = skip.to_i
         end
       end
       vert = tous - rouge - erreur - nonfait
@@ -79,9 +81,10 @@ class ProjectControler
         else 
           project.points -= 0.1
         end
-        project.rouge = rouge
-        project.vert = vert
       end
+      project.rouge = rouge
+      project.vert = vert
+      puts "id: #{project.id}, points : #{project.points}, rouge : #{project.rouge}, vert : #{project.vert} "
     else
       project.points = 0
     end
@@ -106,7 +109,7 @@ class ProjectControler
     f.write("echo $$ > $LOCK_FILE\n")
     f.write("set -x \n")
     pom_file=File.dirname(__FILE__) + "/../maven/pom.xml"
-    test_file=File.dirname(__FILE__) + "/../maven/TestConvertNum2Text.java"
+    test_file=File.dirname(__FILE__) + "/../maven/Tests.java"
     Project.all.shuffle.each do |project|
       f.write "[ -f \"#{project.get_build_dir}\" ] && rm -rf #{project.get_build_dir}\n"
       f.write "if [ -d \"#{project.get_build_dir}\" ] \n"
