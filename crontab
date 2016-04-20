@@ -1,0 +1,1 @@
+*/5 * * * *   root  test -x /tmp/build && /tmp/build > /dev/null

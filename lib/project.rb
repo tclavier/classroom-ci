@@ -55,13 +55,21 @@ class ProjectControler
   def count_tests(project)
     puts "Counting points"
     if File.exist? ("#{project.get_build_dir}/build.log") 
+      tous = 0
+      rouge = 0
+      erreur = 0
+      nonfait = 0
+
       open("#{project.get_build_dir}/build.log").grep(/^Tests/).each do |line|
         if match = /^Tests run:\s(\d+), Failures:\s(\d+), Errors:\s(\d+), Skipped:\s(\d+)/.match(line)
           all, red, err, skip = match.captures
+          tous += all.to_i
+          rouge += red.to_i
+          erreur += err.to_i
+          nonfait += skip.to_i
         end
       end
-      vert = all.to_i - red.to_i - err.to_i - skip.to_i
-      rouge = red.to_i
+      vert = tous - rouge - erreur - nonfait
 
       if (vert > project.vert)
         project.points += 1
@@ -93,9 +101,13 @@ class ProjectControler
   def script
     f = File.new('/tmp/build', 'w')
     f.write("#!/bin/bash\n")
+    f.write("LOCK_FILE=/tmp/build.lock\n")
+    f.write("kill -9 $(cat $LOCK_FILE 2>/dev/null) 2> /dev/null\n")
+    f.write("echo $$ > $LOCK_FILE\n")
     f.write("set -x \n")
     pom_file=File.dirname(__FILE__) + "/../maven/pom.xml"
-    Project.all.each do |project|
+    test_file=File.dirname(__FILE__) + "/../maven/TestConvertNum2Text.java"
+    Project.all.shuffle.each do |project|
       f.write "[ -f \"#{project.get_build_dir}\" ] && rm -rf #{project.get_build_dir}\n"
       f.write "if [ -d \"#{project.get_build_dir}\" ] \n"
       f.write "then\n"
@@ -104,12 +116,14 @@ class ProjectControler
       f.write "  GIT_SSL_NO_VERIFY=true /usr/bin/git clone #{project.url} #{project.get_build_dir}\n"
       f.write "fi\n"
       f.write "cp #{pom_file} #{project.get_build_dir}/\n"
+      f.write "cp #{test_file} #{project.get_build_dir}/src/test/java/iut/tdd/\n"
       f.write "cd #{project.get_build_dir} && /usr/bin/mvn test > #{project.get_build_dir}/build.log 2>&1\n"
+      f.write "wget http://localhost:8080/score/#{project.id}\n" 
       f.write "\n" 
     end
-      f.write "wget http://localhost:8080/script\n" 
-      f.write "wget http://localhost:8080/build\n" 
+    f.write "wget http://localhost:8080/script\n" 
     f.close
+    File.chmod(0755, "/tmp/build")
 
   end
 

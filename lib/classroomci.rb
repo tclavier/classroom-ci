@@ -37,6 +37,7 @@ class ClassroomCI < Sinatra::Application
       if project.save
         projectControler = ProjectControler.new
         projectControler.count_tests(project)
+        projectControler.script
         redirect '/', :notice => 'The project was successfully created'
       end
     end
@@ -46,6 +47,12 @@ class ClassroomCI < Sinatra::Application
   get '/build' do 
     projectControler = ProjectControler.new
     projectControler.perform
+    redirect '/'
+  end
+
+  get '/score/:project' do 
+    projectControler = ProjectControler.new
+    projectControler.count_tests(Project.get(params['project']))
     redirect '/'
   end
 

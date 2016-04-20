@@ -4,6 +4,7 @@ run sed -e 's/httpredir.debian.org/debian.mirrors.ovh.net/g' -i /etc/apt/sources
 arg http_proxy
 run apt-get update \
     && apt-get install -y \
+      cron \
       git \
       maven2 \
       openjdk-7-jdk \
@@ -11,6 +12,7 @@ run apt-get update \
       ruby \ 
       sudo \
       unicorn \
+      wget \
     && apt-get clean
 run update-alternatives --set java /usr/lib/jvm/java-7-openjdk-amd64/jre/bin/java
 add Gemfile /opt/classroom/
@@ -21,7 +23,8 @@ run apt-get update && \
     apt-get remove --purge -y libsqlite3-dev && \
     apt-get autoremove -y &&\
     apt-get clean
+add . /opt/classroom/
 expose 8080
 workdir /opt/classroom
 add crontab /etc/cron.d/classroom
-cmd /opt/classroom/start
+cmd ["/opt/classroom/start"]
