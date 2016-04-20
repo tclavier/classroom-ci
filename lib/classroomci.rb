@@ -56,6 +56,11 @@ class ClassroomCI < Sinatra::Application
     redirect '/'
   end
 
+  get '/log/:project' do 
+    project = Project.get(params['project'])
+    send_file "#{project.get_build_dir}/build.log"
+  end
+
   get '/script' do 
     projectControler = ProjectControler.new
     projectControler.script

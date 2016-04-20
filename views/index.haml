@@ -25,3 +25,5 @@
           %td=project.vert 
           %td=project.rouge 
           %td=project.last_build.strftime("%H:%M:%S")
+          %td
+            %a{href: "/log/#{project.id}"}Log
